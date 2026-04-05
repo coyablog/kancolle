@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>【艦これ】工具箱</title>
+<link href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%231a4a8a'/%3E%3Cg transform='translate(16,16) scale(0.72) translate(-16,-16)'%3E%3Cpath fill='%23c8a84b' d='M0 16q0 2.624 0.8 5.056t2.304 4.416 3.456 3.456 4.416 2.304 5.024 0.8q2.624 0 5.056-0.8t4.416-2.304 3.424-3.456 2.304-4.416 0.8-5.056v-4l-8 8h3.296q-1.088 3.072-3.552 5.152t-5.728 2.656v-9.792h1.984q0.832 0 1.408-0.576t0.608-1.44-0.608-1.408-1.408-0.576h-1.984v-2.368q1.76-0.608 2.88-2.144t1.12-3.488q0-2.24-1.504-3.936t-3.712-1.984q-0.416-0.096-0.8-0.096t-0.8 0.096q-2.208 0.32-3.712 1.984t-1.472 3.936q0 1.92 1.088 3.456t2.912 2.176v2.368h-2.016q-0.832 0-1.408 0.576t-0.576 1.408 0.576 1.44 1.408 0.576h2.016v9.792q-3.264-0.544-5.728-2.656t-3.584-5.152h3.296l-8-8v4zM14.016 6.016q0-0.832 0.576-1.408t1.408-0.608 1.408 0.608 0.608 1.408-0.608 1.408-1.408 0.576-1.408-0.576-0.576-1.408z'/%3E%3C/g%3E%3C/svg%3E" rel="icon" type="image/svg+xml">
+<style>
+  @import url(https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@100..900&family=Noto+Serif+TC:wght@200..900&display=swap);
+  *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+  }
+  body {
+      font-family: "Noto Sans TC", sans-serif;
+      background: #0d1520;
+      color: #dde8f0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6% 4%;
+  }
+  .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 3%;
+      width: 100%;
+      max-width: 560px;
+  }
+  .tool-card {
+      position: relative;
+      background: #131e30;
+      border: 1px solid rgba(74, 143, 191, 0.2);
+      border-top: 2px solid #c0392b;
+      border-radius: 5px;
+      padding: 10%;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      gap: 10%;
+      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+      overflow: hidden;
+  }
+  .tool-card::before, .tool-card::after {
+      content: '';
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-color: #c0392b;
+      border-style: solid;
+      opacity: 0.5;
+      transition: opacity 0.2s;
+  }
+  .tool-card::before {
+      bottom: 8px;
+      right: 8px;
+      border-width: 0 1.5px 1.5px 0;
+  }
+  .tool-card::after {
+      bottom: 8px;
+      left: 8px;
+      border-width: 0 0 1.5px 1.5px;
+  }
+  .tool-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 36px rgba(0, 0, 0, 0.7);
+      border-color: rgba(74, 143, 191, 0.45);
+      border-top-color: #c0392b;
+  }
+  .tool-card:hover::before, .tool-card:hover::after {
+      opacity: 0.8;
+  }
+  .tool-name {
+      font-family: "Noto Serif TC", serif;
+      font-size: 20px;
+      font-weight: bold;
+      color: #c8a84b;
+      letter-spacing: 0.08em;
+  }
+  .tool-desc {
+      font-size: 13px;
+      color: #566a80;
+      letter-spacing: 0.04em;
+      line-height: 1.75;
+  }
+</style>
+</head>
+<body>
+<div class="tools-grid">
+
+<a class="tool-card" href="daihatsu_tank.html" target="_blank" rel="noopener noreferrer">
+<div class="tool-name">賽艇人速查</div>
+<div class="tool-desc">可搭載大發動艇或內火艇的艦娘一覽，支援篩選。</div>
+</a>
+
+<a class="tool-card" href="ranking_tool.html" target="_blank" rel="noopener noreferrer">
+<div class="tool-name">戰果計算</div>
+<div class="tool-desc">計算每日、每場所需刷新量，並顯示本月完成進度。</div>
+</a>
+
+</div>
+</body>
+</html>

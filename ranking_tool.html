@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>【艦これ】戰果計算</title>
+<link href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%231a4a8a'/%3E%3Cg transform='translate(16,16) scale(0.72) translate(-16,-16)'%3E%3Cpath fill='%23c8a84b' d='M0 16q0 2.624 0.8 5.056t2.304 4.416 3.456 3.456 4.416 2.304 5.024 0.8q2.624 0 5.056-0.8t4.416-2.304 3.424-3.456 2.304-4.416 0.8-5.056v-4l-8 8h3.296q-1.088 3.072-3.552 5.152t-5.728 2.656v-9.792h1.984q0.832 0 1.408-0.576t0.608-1.44-0.608-1.408-1.408-0.576h-1.984v-2.368q1.76-0.608 2.88-2.144t1.12-3.488q0-2.24-1.504-3.936t-3.712-1.984q-0.416-0.096-0.8-0.096t-0.8 0.096q-2.208 0.32-3.712 1.984t-1.472 3.936q0 1.92 1.088 3.456t2.912 2.176v2.368h-2.016q-0.832 0-1.408 0.576t-0.576 1.408 0.576 1.44 1.408 0.576h2.016v9.792q-3.264-0.544-5.728-2.656t-3.584-5.152h3.296l-8-8v4zM14.016 6.016q0-0.832 0.576-1.408t1.408-0.608 1.408 0.608 0.608 1.408-0.608 1.408-1.408 0.576-1.408-0.576-0.576-1.408z'/%3E%3C/g%3E%3C/svg%3E" rel="icon" type="image/svg+xml">
+<style>
+  @import url(https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@100..900&family=Noto+Serif+TC:wght@100..900&family=Share+Tech+Mono&display=swap);
+  :root {
+      --bg-deep: #0d1520;
+      --bg-panel: #131e30;
+      --bg-card: #192638;
+      --bg-input: #0d1520;
+      --accent-main: #c0392b;
+      --accent-gold: #c8a84b;
+      --accent-blue: #4a8fbf;
+      --text-pri: #dde8f0;
+      --text-dim: #566a80;
+      --text-label: #7fa8c8;
+      --border: rgba(74, 143, 191, 0.2);
+      --border-hi: rgba(192, 57, 43, 0.5);
+      --shadow: rgba(0, 0, 0, 0.6);
+  }
+  *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+  }
+  body {
+      font-family: "Noto Sans TC", sans-serif;
+      background: var(--bg-deep);
+      color: var(--text-pri);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+  }
+  body::before {
+      content: "';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse 55% 45% at 15% 5%, rgba(74, 143, 191, 0.08) 0%, transparent 65%), radial-gradient(ellipse 40% 55% at 85% 95%, rgba(192, 57, 43, 0.06) 0%, transparent 65%);
+      pointer-events: none;
+  }
+  .panel {
+      position: relative;
+      width: 480px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-top: 2px solid var(--accent-main);
+      border-radius: 5px;
+      padding: 1.5%;
+      box-shadow: 0 0 50px var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+      animation: rise 0.45s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  .panel::before, .panel::after {
+      content: "";
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-color: #c0392b;
+      border-style: solid;
+      opacity: 0.5;
+      transition: opacity 0.2s;
+  }
+  .panel::before {
+      bottom: 8px;
+      right: 8px;
+      border-width: 0 1.5px 1.5px 0;
+  }
+  .panel::after {
+      bottom: 8px;
+      left: 8px;
+      border-width: 0 0 1.5px 1.5px;
+  }
+  @keyframes rise {
+      from {
+          opacity: 0;
+          transform: translateY(16px);
+      }
+      to {
+          opacity: 1;
+          transform: translateY(0);
+      }
+  }
+  .corner {
+      position: absolute;
+      width: 14px;
+      height: 14px;
+  }
+  .corner::before, .corner::after {
+      content: "';
+      position: absolute;
+      background: var(--accent-main);
+      opacity: 0.5;
+  }
+  .corner::before {
+      width: 100%;
+      height: 1.5px;
+      top: 0;
+      left: 0;
+  }
+  .corner::after {
+      width: 1.5px;
+      height: 100%;
+      top: 0;
+      left: 0;
+  }
+  .c-tl {
+      top: 8px;
+      left: 8px;
+  }
+  .c-tr {
+      top: 8px;
+      right: 8px;
+      transform: scaleX(-1);
+  }
+  .c-bl {
+      bottom: 8px;
+      left: 8px;
+      transform: scaleY(-1);
+  }
+  .c-br {
+      bottom: 8px;
+      right: 8px;
+      transform: scale(-1);
+  }
+  .header {
+      text-align: center;
+      margin-bottom: 3.5%;
+  }
+  h2 {
+      font-family: "Noto Serif TC", serif;
+      font-size: 30px;
+      font-weight: bold;
+      letter-spacing: 0.1em;
+      color: var(--accent-gold);
+      text-shadow: 0 0 18px rgba(200, 168, 75, 0.5);
+      margin-bottom: 3.5%;
+  }
+  .rule {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 3.5%;
+  }
+  .rule-line {
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--border), transparent);
+  }
+  .rule-mark {
+      width: 6px;
+      height: 6px;
+      border: 1px solid var(--accent-main);
+      transform: rotate(45deg);
+      opacity: 0.7;
+  }
+  #today {
+      font-family: "Share Tech Mono", monospace;
+      font-size: 13px;
+      color: var(--text-dim);
+      letter-spacing: 0.06em;
+  }
+  .field {
+      margin-bottom: 3.5%;
+  }
+  label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: var(--text-label);
+      text-transform: uppercase;
+      margin-bottom: 1.5%;
+  }
+  input[type="number"] {
+      width: 100%;
+      height: 50px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      color: var(--text-pri);
+      font-family: "Share Tech Mono", monospace;
+      font-size: 25px;
+      padding: 0 2.5%;
+      outline: none;
+  }
+  input[type="number"]:focus {
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 2px rgba(74, 143, 191, 0.15);
+  }
+  input[type="number"]::-webkit-inner-spin-button, input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+  }
+  .result-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 5% 0;
+  }
+  .stat {
+      height: 65px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-left: 2px solid var(--accent-main);
+      border-radius: 3px;
+      padding: 3.5%;
+  }
+  .stat.hl {
+      border-left-color: var(--accent-blue);
+  }
+  .stat-label {
+      font-size: 13px;
+      font-weight: bold;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      margin-bottom: 3.5%;
+  }
+  .stat-value {
+      font-family: "Share Tech Mono", monospace;
+      font-size: 25px;
+      color: var(--text-pri);
+      line-height: 1;
+  }
+  .stat.hl .stat-value {
+      color: var(--accent-blue);
+  }
+  .prog-wrap {
+      margin-top: 5%;
+  }
+  .prog-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 1.5%;
+  }
+  .prog-lbl {
+      font-size: 13px;
+      font-weight: bold;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      text-transform: uppercase;
+  }
+  #prog-pct {
+      font-family: "Share Tech Mono", monospace;
+      font-size: 14px;
+      color: var(--accent-gold);
+  }
+  .prog-track {
+      height: 10px;
+      background: var(--bg-card);
+      border-radius: 5px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+  }
+  .prog-bar {
+      height: 100%;
+      border-radius: 5px;
+      background: linear-gradient(to right, var(--accent-blue), var(--accent-gold));
+      width: 0%;
+      transition: width 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+      box-shadow: 0 0 6px rgba(200, 168, 75, 0.4);
+  }
+  .tip {
+      text-align: center;
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      margin-top: 3.5%;
+  }
+</style>
+</head>
+<body>
+<div class="panel"><span class="corner c-tl"></span> <span class="corner c-tr"></span> <span class="corner c-bl"></span> <span class="corner c-br"></span>
+<div class="header">
+<h2>戰果計算</h2>
+<div class="rule">
+<div class="rule-line"></div>
+<div class="rule-mark"></div>
+<div class="rule-line"></div>
+</div>
+<div id="today"></div>
+</div>
+<div class="field"><label>目標戰果</label> <input id="target" placeholder="0" type="number"></div>
+<div class="field"><label>目前戰果</label> <input id="current" placeholder="0" type="number"></div>
+<div class="result-grid">
+<div class="stat">
+<div class="stat-label">剩餘刷新</div>
+<div class="stat-value" id="v-refresh">—</div>
+</div>
+<div class="stat">
+<div class="stat-label">剩餘戰果</div>
+<div class="stat-value" id="v-remain">—</div>
+</div>
+<div class="stat hl">
+<div class="stat-label">每場需求</div>
+<div class="stat-value" id="v-per-run">—</div>
+</div>
+<div class="stat hl">
+<div class="stat-label">每日需求</div>
+<div class="stat-value" id="v-per-day">—</div>
+</div>
+</div>
+<div class="prog-wrap">
+<div class="prog-header"><span class="prog-lbl">完成進度</span> <span id="prog-pct">0%</span></div>
+<div class="prog-track">
+<div class="prog-bar" id="bar"></div>
+</div>
+</div>
+<div class="tip">輸入數值自動計算</div>
+</div>
+<script>
+  /* ── 日期 ── */
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  document.getElementById("today").textContent =
+    today.toLocaleDateString("zh-TW", { year:"numeric", month:"long", day:"numeric", weekday:"short" });
+
+  /* ── 讀取儲存值 ── */
+  window.addEventListener("load", () => {
+    const t = localStorage.getItem("wf_target");
+    const c = localStorage.getItem("wf_current");
+    if (t) document.getElementById("target").value  = t;
+    if (c) document.getElementById("current").value = c;
+    calc();
+  });
+
+  document.getElementById("target").addEventListener("input", calc);
+  document.getElementById("current").addEventListener("input", calc);
+
+  const trunc2 = n => Math.floor(n * 100) / 100;
+
+  function calc() {
+    const target  = Number(document.getElementById("target").value)  || 0;
+    const current = Number(document.getElementById("current").value) || 0;
+
+    localStorage.setItem("wf_target",  target);
+    localStorage.setItem("wf_current", current);
+
+    const end          = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    const remainDays   = Math.floor((end - today) / 864e5) + 1;
+
+    const now = new Date();
+    const r1  = new Date(today); r1.setHours(1,  0, 0, 0);
+    const r2  = new Date(today); r2.setHours(13, 0, 0, 0);
+    const todayLeft    = now < r1 ? 2 : now < r2 ? 1 : 0;
+    const totalRefresh = remainDays * 2 - (2 - todayLeft);
+
+    const remain = target - current;
+    const perRun = totalRefresh > 0 ? trunc2(remain / totalRefresh)     : remain;
+    const perDay = totalRefresh > 0 ? trunc2(remain / totalRefresh * 2) : remain * 2;
+    const pct    = target > 0 ? Math.min(current / target * 100, 100) : 0;
+
+    document.getElementById("v-refresh").textContent = totalRefresh;
+    document.getElementById("v-remain").textContent  = remain;
+    document.getElementById("v-per-run").textContent = perRun;
+    document.getElementById("v-per-day").textContent = perDay;
+    document.getElementById("prog-pct").textContent  = trunc2(pct) + "%";
+    document.getElementById("bar").style.width       = pct + "%";
+  }
+</script>
+</body>
+</html>

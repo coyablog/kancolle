@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>【艦これ】賽艇人速查</title>
+<link href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%231a4a8a'/%3E%3Cg transform='translate(16,16) scale(0.72) translate(-16,-16)'%3E%3Cpath fill='%23c8a84b' d='M0 16q0 2.624 0.8 5.056t2.304 4.416 3.456 3.456 4.416 2.304 5.024 0.8q2.624 0 5.056-0.8t4.416-2.304 3.424-3.456 2.304-4.416 0.8-5.056v-4l-8 8h3.296q-1.088 3.072-3.552 5.152t-5.728 2.656v-9.792h1.984q0.832 0 1.408-0.576t0.608-1.44-0.608-1.408-1.408-0.576h-1.984v-2.368q1.76-0.608 2.88-2.144t1.12-3.488q0-2.24-1.504-3.936t-3.712-1.984q-0.416-0.096-0.8-0.096t-0.8 0.096q-2.208 0.32-3.712 1.984t-1.472 3.936q0 1.92 1.088 3.456t2.912 2.176v2.368h-2.016q-0.832 0-1.408 0.576t-0.576 1.408 0.576 1.44 1.408 0.576h2.016v9.792q-3.264-0.544-5.728-2.656t-3.584-5.152h3.296l-8-8v4zM14.016 6.016q0-0.832 0.576-1.408t1.408-0.608 1.408 0.608 0.608 1.408-0.608 1.408-1.408 0.576-1.408-0.576-0.576-1.408z'/%3E%3C/g%3E%3C/svg%3E" rel="icon" type="image/svg+xml">
+<style>
+    @import url(https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@100..900&family=Noto+Serif+TC:wght@200..900&display=swap);
+    :root {
+        --radius: 5px;
+        --navy-deep: #0b1a2e;
+        --navy-mid: #12294a;
+        --navy-light: #1a3d6b;
+        --gold: #c8a84b;
+        --gold-light: #e8cc80;
+        --steel: #8aa4c0;
+        --steel-light: #b8cfe0;
+        --white: #f0f4f8;
+        --淺色文字: #8aa4c0;
+        --大發: rgba(144, 196, 240, 1);
+        --大發背景: rgba(144, 196, 240, 0.1);
+        --大發邊框: rgba(144, 196, 240, 0.4);
+        --內火: rgba(212, 168, 74, 1);
+        --內火背景: rgba(212, 168, 74, 0.1);
+        --內火邊框: rgba(212, 168, 74, 0.4);
+        --兩者: rgba(176, 154, 216, 1);
+        --兩者背景: rgba(176, 154, 216, 0.1);
+        --兩者邊框: rgba(176, 154, 216, 0.4);
+    }
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+    body {
+        font-family: "Noto Sans TC", sans-serif;
+        background: var(--navy-deep);
+        color: var(--white);
+        min-height: 100vh;
+    }
+    /* ── 背景裝飾 ── */
+
+    body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background: radial-gradient(ellipse 80% 50% at 20% 0%, rgba(26, 61, 107, 0.5) 0%, transparent 60%), radial-gradient(ellipse 60% 40% at 80% 100%, rgba(18, 41, 74, 0.8) 0%, transparent 60%);
+        pointer-events: none;
+        z-index: 0;
+    }
+    /* -- 卷軸 -- */
+
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+        background: rgb(138, 164, 192, 0.4);
+        border-radius: 15px;
+    }
+    /* ── 頁首 ── */
+
+    header {
+        position: relative;
+        z-index: 10;
+        padding: 20px 30px;
+        border-bottom: 1px solid rgba(200, 168, 75, 0.25);
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+    .header-anchor {
+        width: 44px;
+        height: 44px;
+        background: var(--navy-light);
+        border: 2px solid var(--gold);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    .header-anchor svg {
+        width: 22px;
+        height: 22px;
+    }
+    header h1 {
+        font-family: "Noto Serif TC", serif;
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--gold-light);
+        letter-spacing: 0.1em;
+    }
+    header .subtitle {
+        font-size: 13px;
+        color: var(--淺色文字);
+        margin-top: 2px;
+        letter-spacing: 0.05em;
+    }
+    .header-meta {
+        margin-left: auto;
+        font-size: 13px;
+        color: var(--淺色文字);
+        text-align: right;
+        line-height: 1.6;
+    }
+    /* ── 篩選列 ── */
+
+    .filter-bar {
+        position: relative;
+        z-index: 10;
+        padding: 14px 32px;
+        background: rgba(18, 41, 74, 0.6);
+        border-bottom: 1px solid rgba(138, 164, 192, 0.15);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+    }
+    .filter-label {
+        font-size: 14px;
+        color: var(--淺色文字);
+        letter-spacing: 0.08em;
+        margin-right: 4px;
+        text-transform: uppercase;
+    }
+    .filter-btn {
+        font-family: "Noto Sans TC", sans-serif;
+        font-size: 14px;
+        padding: 4px 12px;
+        border-radius: 20px;
+        border: 1px solid rgba(138, 164, 192, 0.35);
+        background: transparent;
+        color: var(--steel-light);
+        cursor: pointer;
+        transition: all 0.18s ease;
+        letter-spacing: 0.04em;
+    }
+    .filter-btn:hover {
+        border-color: var(--gold);
+        color: var(--gold-light);
+    }
+    .filter-btn.active {
+        background: var(--gold);
+        border-color: var(--gold);
+        color: var(--navy-deep);
+        font-weight: 600;
+    }
+    .filter-divider {
+        width: 1px;
+        height: 20px;
+        background: rgba(138, 164, 192, 0.2);
+        margin: 0 4px;
+    }
+    /* ── 主內容 ── */
+
+    main {
+        position: relative;
+        z-index: 5;
+        padding: 30px 30px 10px;
+    }
+    /* ── 裝備類別區塊 ── */
+
+    .group {
+        margin-bottom: 30px;
+    }
+    .group-header {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid;
+    }
+    .group[data-type="大發系"] .group-header {
+        border-color: var(--大發邊框);
+    }
+    .group[data-type="內火艇"] .group-header {
+        border-color: var(--內火邊框);
+    }
+    .group[data-type="大發系＆內火艇"] .group-header {
+        border-color: var(--兩者邊框);
+    }
+    .group-badge {
+        font-family: "Noto Serif TC", serif;
+        font-size: 16px;
+        font-weight: 700;
+        padding: 5px 15px;
+        border-radius: var(--radius);
+        letter-spacing: 0.06em;
+    }
+    .group[data-type="大發系"] .group-badge {
+        background: var(--大發背景);
+        color: var(--大發);
+        border: 1px solid var(--大發邊框);
+    }
+    .group[data-type="內火艇"] .group-badge {
+        background: var(--內火背景);
+        color: var(--內火);
+        border: 1px solid var(--內火邊框);
+    }
+    .group[data-type="大發系＆內火艇"] .group-badge {
+        background: var(--兩者背景);
+        color: var(--兩者);
+        border: 1px solid var(--兩者邊框);
+    }
+    .group-count {
+        font-size: 14px;
+        color: var(--淺色文字);
+    }
+    /* ── 子分類 ── */
+
+    .subgroup {
+        margin-bottom: 10px;
+    }
+    .subgroup-label {
+        font-size: 14px;
+        color: var(--淺色文字);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+        padding-left: 2px;
+    }
+    /* ── 艦船卡片列 ── */
+
+    .ship-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    .ship-card {
+        width: 220px;
+        border-radius: var(--radius);
+        overflow: hidden;
+        border: 1px solid rgba(138, 164, 192, 0.15);
+        background: rgba(18, 41, 74, 0.5);
+        cursor: pointer;
+        transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+        position: relative;
+    }
+    .ship-card:hover {
+        border-color: rgba(200, 168, 75, 0.4);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    }
+    .ship-card img {
+        width: 100%;
+        height: 56px;
+        object-fit: cover;
+        display: block;
+    }
+    .ship-note {
+        font-size: 13px;
+        padding: 4px 8px;
+        text-align: center;
+        color: var(--steel-light);
+        background: rgba(11, 26, 46, 0.7);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        letter-spacing: 0.02em;
+    }
+    /* 點擊後半透明 */
+
+    .ship-card.done img {
+        opacity: 0.3;
+    }
+    .ship-card.done .ship-note {
+        opacity: 0.5;
+    }
+    .ship-card.done::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        color: rgba(200, 168, 75, 0.5);
+        pointer-events: none;
+    }
+    /* 篩選隱藏 */
+
+    .ship-card.hidden, .subgroup.empty {
+        display: none;
+    }
+    /* 無結果 */
+
+    .no-result {
+        font-size: 13px;
+        color: var(--淺色文字);
+        padding: 20px 0;
+        display: none;
+    }
+    .no-result.show {
+        display: block;
+    }
+    /* 整個 group 隱藏 */
+
+    .group.all-hidden {
+        display: none;
+    }
+    /* ── 分隔線裝飾 ── */
+
+    .ornament {
+        text-align: center;
+        color: rgba(200, 168, 75, 0.25);
+        font-size: 16px;
+        letter-spacing: 0.5em;
+        margin: 8px 0 16px;
+    }
+    /* 捲動到頂部 */
+
+    #back-top {
+        position: fixed;
+        bottom: 24px;
+        right: 28px;
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: rgba(26, 61, 107, 0.9);
+        border: 1px solid var(--gold);
+        color: var(--gold);
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        opacity: 0;
+        transition: opacity 0.3s;
+        z-index: 100;
+    }
+    #back-top.show {
+        opacity: 1;
+    }
+    #back-top:hover {
+        background: var(--gold);
+    }
+    #back-top:hover svg line, #back-top:hover svg polyline {
+        stroke: var(--navy-deep);
+    }
+    /* ── 清除按鈕 ── */
+
+    #reset-filter-btn, #clear-btn {
+        font-family: "Noto Sans TC", sans-serif;
+        font-size: 14px;
+        padding: 4px 12px;
+        border-radius: 20px;
+        border: 1px solid rgba(200, 100, 100, 0.4);
+        background: transparent;
+        color: rgba(220, 140, 140, 0.8);
+        cursor: pointer;
+        transition: all 0.18s ease;
+        letter-spacing: 0.04em;
+    }
+    #reset-filter-btn:hover, #clear-btn:hover {
+        border-color: #e07070;
+        color: #f0a0a0;
+        background: rgba(180, 60, 60, 0.15);
+    }
+    /* ── 頁腳 ── */
+
+    footer {
+        position: relative;
+        z-index: 5;
+        padding: 20px 30px;
+        border-top: 1px solid rgba(138, 164, 192, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    footer .footer-text {
+        font-size: 13px;
+        color: rgba(138, 164, 192, 0.4);
+        letter-spacing: 0.06em;
+    }
+</style>
+</head>
+<body>
+<!-- 頁首 -->
+<header>
+<div class="header-anchor"><svg viewbox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 16q0 2.624 0.8 5.056t2.304 4.416 3.456 3.456 4.416 2.304 5.024 0.8q2.624 0 5.056-0.8t4.416-2.304 3.424-3.456 2.304-4.416 0.8-5.056v-4l-8 8h3.296q-1.088 3.072-3.552 5.152t-5.728 2.656v-9.792h1.984q0.832 0 1.408-0.576t0.608-1.44-0.608-1.408-1.408-0.576h-1.984v-2.368q1.76-0.608 2.88-2.144t1.12-3.488q0-2.24-1.504-3.936t-3.712-1.984q-0.416-0.096-0.8-0.096t-0.8 0.096q-2.208 0.32-3.712 1.984t-1.472 3.936q0 1.92 1.088 3.456t2.912 2.176v2.368h-2.016q-0.832 0-1.408 0.576t-0.576 1.408 0.576 1.44 1.408 0.576h2.016v9.792q-3.264-0.544-5.728-2.656t-3.584-5.152h3.296l-8-8v4zM14.016 6.016q0-0.832 0.576-1.408t1.408-0.608 1.408 0.608 0.608 1.408-0.608 1.408-1.408 0.576-1.408-0.576-0.576-1.408z" fill="#c8a84b"></path>
+</svg></div>
+<div>
+<h1>【艦これ】賽艇人速查</h1>
+<div class="subtitle">點擊標記要隱藏的艦娘，使用篩選功能快速查詢。</div>
+</div>
+<div class="header-meta">最後更新：2026.03.13<br>
+<span style="color:rgba(138,164,192,0.6)">@Coyablog</span></div>
+</header>
+<!-- 篩選列 -->
+<div class="filter-bar"><span class="filter-label">裝備</span> <button class="filter-btn active" data-filter-type="all">全部</button> <button class="filter-btn" data-filter-type="大發系">大發系</button> <button class="filter-btn" data-filter-type="內火艇">內火艇</button> <button class="filter-btn" data-filter-type="大發系＆內火艇">兩者皆可</button>
+<div class="filter-divider"></div>
+<span class="filter-label">艦種</span> <button class="filter-btn active" data-filter-sub="all">全部</button> <button class="filter-btn" data-filter-sub="大船">大船</button> <button class="filter-btn" data-filter-sub="巡洋">巡洋</button> <button class="filter-btn" data-filter-sub="驅逐">驅逐</button> <button class="filter-btn" data-filter-sub="其他">其他</button>
+<div class="filter-divider"></div>
+<button id="reset-filter-btn" title="重置所有篩選條件">清除篩選</button> <button id="clear-btn" title="清除所有已標記艦娘">清除標記</button></div>
+<!-- 主內容 -->
+<main id="main-content"></main>
+<footer><span class="footer-text">此網頁由 Claude 協助製作</span></footer>
+<button id="back-top" title="返回頂部"><svg height="16" viewbox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg">
+<line stroke="#c8a84b" stroke-linecap="round" stroke-width="1.8" x1="8" x2="8" y1="13" y2="3"></line>
+<polyline fill="none" points="3,7.5 8,3 13,7.5" stroke="#c8a84b" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></polyline>
+</svg></button> 
+<script>
+    // ── 資料庫 ──────────────────────────────────────────────────────────────
+    const BASE = "./img/";
+    
+    const database = {
+    "大發系": {
+    "大船": [
+      {url: BASE + "889.png", note: "雲鷹改二"},
+      {url: BASE + "707.png", note: "Gambier Bay Mk.II"},
+    ],
+    "巡洋": [
+      {url: BASE + "630.png", note: "Gotland andra"},
+    ],
+    "驅逐": [
+      {url: BASE + "434.png", note: "睦月改二"},
+      {url: BASE + "435.png", note: "如月改二"},
+      {url: BASE + "260.png", note: "三日月改"},
+      {url: BASE + "986.png", note: "白雪改二"},
+      {url: BASE + "987.png", note: "初雪改二"},
+      {url: BASE + "959.png", note: "深雪改二"},
+      {url: BASE + "419.png", note: "初霜改二"},
+      {url: BASE + "703.png", note: "有明改"},
+      {url: BASE + "725.png", note: "夕暮改"},
+      {url: BASE + "498.png", note: "村雨改二"},
+      {url: BASE + "975.png", note: "春雨改二"},
+      {url: BASE + "469.png", note: "江風改二"},
+      {url: BASE + "951.png", note: "天津風改二"},
+      {url: BASE + "559.png", note: "谷風丁改"},
+      {url: BASE + "563.png", note: "卷雲改二"},
+      {url: BASE + "1033.png", note: "玉波改二"},
+      {url: BASE + "956.png", note: "早霜改二"},
+      {url: BASE + "716.png", note: "梅改"},
+    ],
+    "其他": [
+      {url: BASE + "650.png", note: "宗谷／全型態"},
+      {url: BASE + "1000.png", note: "大泊改"},
+    ],
+    },
+    "內火艇": {
+    "大船": [
+      {url: BASE + "954.png", note: "榛名改二丙"},
+      {url: BASE + "694.png", note: "霧島改二丙"},
+      {url: BASE + "573.png", note: "陸奧改二"},
+      {url: BASE + "411.png", note: "扶桑改二"},
+      {url: BASE + "412.png", note: "山城改二"},
+    ],
+    "巡洋": [
+      {url: BASE + "662.png", note: "能代改二"},
+      {url: BASE + "668.png", note: "矢矧改二／矢矧改二乙"},
+    ],
+    "驅逐": [
+      {url: BASE + "497.png", note: "白露改二"},
+      {url: BASE + "961.png", note: "時雨改三"},
+      {url: BASE + "588.png", note: "山風改二"},
+      {url: BASE + "568.png", note: "黑潮改二"},
+      {url: BASE + "670.png", note: "親潮改二"},
+      {url: BASE + "656.png", note: "雪風改二"},
+      {url: BASE + "556.png", note: "浦風丁改"},
+      {url: BASE + "564.png", note: "風雲改二"},
+      {url: BASE + "981.png", note: "藤波改二"},
+      {url: BASE + "982.png", note: "早波改二"},
+      {url: BASE + "983.png", note: "浜波改二"},
+      {url: BASE + "569.png", note: "沖波改二"},
+      {url: BASE + "578.png", note: "朝霜改二"},
+    ],
+    "其他": [
+      {url: BASE + "402.png", note: "潛艇／全員"},
+      {url: BASE + "727.png", note: "第百一号輸送艦改"},
+    ],
+    },
+    "大發系＆內火艇": {
+    "大船": [
+      {url: BASE + "541.png", note: "長門改二"},
+      {url: BASE + "916.png", note: "大和改二重"},
+      {url: BASE + "899.png", note: "鳳翔改二戰"},
+    ],
+    "巡洋": [
+      {url: BASE + "506.png", note: "最上改二特"},
+      {url: BASE + "478.png", note: "龍田改二"},
+      {url: BASE + "657.png", note: "球磨改二丁"},
+      {url: BASE + "547.png", note: "多摩改二"},
+      {url: BASE + "488.png", note: "由良改二"},
+      {url: BASE + "487.png", note: "鬼怒改二"},
+      {url: BASE + "200.png", note: "阿武隈改二"},
+      {url: BASE + "623.png", note: "夕張改二特"},
+    ],
+    "驅逐": [
+      {url: BASE + "418.png", note: "皐月改二"},
+      {url: BASE + "548.png", note: "文月改二"},
+      {url: BASE + "666.png", note: "磯波改二"},
+      {url: BASE + "647.png", note: "浦波改二"},
+      {url: BASE + "908.png", note: "天霧改二丁"},
+      {url: BASE + "147.png", note: "Верный"},
+      {url: BASE + "587.png", note: "海風改二"},
+      {url: BASE + "667.png", note: "山風改二丁"},
+      {url: BASE + "468.png", note: "朝潮改二丁"},
+      {url: BASE + "199.png", note: "大潮改二"},
+      {url: BASE + "489.png", note: "滿潮改二"},
+      {url: BASE + "490.png", note: "荒潮改二"},
+      {url: BASE + "198.png", note: "霰改二"},
+      {url: BASE + "464.png", note: "霞改二／霞改二乙"},
+      {url: BASE + "915.png", note: "早潮改二"},
+      {url: BASE + "960.png", note: "清霜改二丁"},
+    ],
+    "其他": [
+      {url: BASE + "106.png", note: "千歲甲"},
+      {url: BASE + "107.png", note: "千代田甲"},
+      {url: BASE + "348.png", note: "瑞穗改"},
+      {url: BASE + "586.png", note: "日進甲"},
+      {url: BASE + "450.png", note: "秋津洲改"},
+      {url: BASE + "507.png", note: "三隈改二特"},
+      {url: BASE + "372.png", note: "Commandant Teste改"},
+      {url: BASE + "500.png", note: "神威改母"},
+      {url: BASE + "352.png", note: "速吸改"},
+      {url: BASE + "626.png", note: "神州丸改"},
+      {url: BASE + "166.png", note: "あきつ丸改"},
+      {url: BASE + "948.png", note: "熊野丸改"},
+    ],
+    },
+    };
+
+    const SUB_LABELS = {
+        "大船": "大船 BB / CV",
+        "巡洋": "巡洋 CA / CL",
+        "驅逐": "驅逐 DD",
+        "其他": "其他 OTHER"
+    };
+    // ── 渲染 ────────────────────────────────────────────────────────────────
+    const main = document.getElementById('main-content');
+    Object.entries(database).forEach(([groupName, subs]) => {
+        const totalCount = Object.values(subs).reduce((s, a) => s + a.length, 0);
+        const group = document.createElement('div');
+        group.className = 'group';
+        group.dataset.type = groupName;
+        group.innerHTML = `
+    <div class="group-header">
+      <span class="group-badge">${groupName}<\/span>
+      <span class="group-count">總計 ${totalCount} 位艦娘<\/span>
+    <\/div>
+    `;
+        Object.entries(subs).forEach(([subName, ships]) => {
+            if (!ships.length) return;
+            const sub = document.createElement('div');
+            sub.className = 'subgroup';
+            sub.dataset.sub = subName;
+            const label = document.createElement('div');
+            label.className = 'subgroup-label';
+            label.textContent = SUB_LABELS[subName] || subName;
+            sub.appendChild(label);
+            const grid = document.createElement('div');
+            grid.className = 'ship-grid';
+            ships.forEach(ship => {
+                const card = document.createElement('div');
+                card.className = 'ship-card';
+                card.dataset.sub = subName;
+                card.dataset.group = groupName;
+                card.innerHTML = `<img src="${ship.url}" alt="${ship.note}" loading="lazy"><div class="ship-note">${ship.note}<\/div>`;
+                const key = 'done:' + ship.url;
+                if (localStorage.getItem(key) === '1') card.classList.add('done');
+                card.addEventListener('click', () => {
+                    card.classList.toggle('done');
+                    if (card.classList.contains('done')) {
+                        localStorage.setItem(key, '1');
+                    } else {
+                        localStorage.removeItem(key);
+                    }
+                });
+                grid.appendChild(card);
+            });
+            sub.appendChild(grid);
+            group.appendChild(sub);
+        });
+        const noResult = document.createElement('div');
+        noResult.className = 'no-result';
+        noResult.textContent = '此條件下無符合艦娘';
+        group.appendChild(noResult);
+        main.appendChild(group);
+    });
+    // ── 清除記錄 ────────────────────────────────────────────────────────────
+    document.getElementById('clear-btn').addEventListener('click', () => {
+        if (!confirm('確定要清除所有標記嗎？')) return;
+        document.querySelectorAll('.ship-card.done').forEach(card => {
+            card.classList.remove('done');
+        });
+        Object.keys(localStorage).filter(k => k.startsWith('done:')).forEach(k => {
+            localStorage.removeItem(k);
+        });
+    });
+    // ── 篩選邏輯 ────────────────────────────────────────────────────────────
+    let activeType = 'all';
+    let activeSub = 'all';
+
+    function applyFilter() {
+        document.querySelectorAll('.group').forEach(group => {
+            const gType = group.dataset.type;
+            const typeMatch = activeType === 'all' || gType === activeType;
+            if (!typeMatch) {
+                group.classList.add('all-hidden');
+                return;
+            }
+            group.classList.remove('all-hidden');
+            let anyVisible = false;
+            group.querySelectorAll('.subgroup').forEach(sub => {
+                const sType = sub.dataset.sub;
+                const subMatch = activeSub === 'all' || sType === activeSub;
+                if (!subMatch) {
+                    sub.classList.add('empty');
+                    return;
+                }
+                sub.classList.remove('empty');
+                anyVisible = true;
+            });
+            const noResult = group.querySelector('.no-result');
+            if (noResult) noResult.classList.toggle('show', !anyVisible);
+        });
+    }
+    document.querySelectorAll('[data-filter-type]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('[data-filter-type]').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            activeType = btn.dataset.filterType;
+            applyFilter();
+        });
+    });
+    document.querySelectorAll('[data-filter-sub]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('[data-filter-sub]').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            activeSub = btn.dataset.filterSub;
+            applyFilter();
+        });
+    });
+    // ── 清除篩選 ────────────────────────────────────────────────────────────
+    document.getElementById('reset-filter-btn').addEventListener('click', () => {
+        activeType = 'all';
+        activeSub = 'all';
+        document.querySelectorAll('[data-filter-type]').forEach(b => b.classList.toggle('active', b.dataset.filterType === 'all'));
+        document.querySelectorAll('[data-filter-sub]').forEach(b => b.classList.toggle('active', b.dataset.filterSub === 'all'));
+        applyFilter();
+    });
+    // ── 回頂部按鈕 ──────────────────────────────────────────────────────────
+    const backTop = document.getElementById('back-top');
+    window.addEventListener('scroll', () => {
+        backTop.classList.toggle('show', window.scrollY > 300);
+    });
+    backTop.addEventListener('click', () => window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    }));
+</script>
+</body>
+</html>
