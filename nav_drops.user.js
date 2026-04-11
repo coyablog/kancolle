@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         KCNAV掉落率上色
 // @namespace    https://tsunkit.net/
-// @version      1.0
+// @version      2.0
 // @description  依掉落率衰減對整排上色，母數不足時顯示灰色。
 // @match        https://tsunkit.net/nav*
 // @grant        GM_addStyle
@@ -15,141 +15,161 @@
   'use strict';
 
   // ============================================================
-  // 母數信賴門檻
-  // 低於此數的行，改顯示「資料不足」灰色，不依掉落率判斷衰減
+  // ⚙️ Config
   // ============================================================
-  const MIN_RELIABLE_SAMPLE = 100;
+
+  const MIN_RELIABLE_SAMPLE = 200;
+
+  const LOW_SAMPLE_STYLE = {
+    bg: '#2a2a2a',
+    fg: '#777777',
+  };
 
   // ============================================================
-  // 衰減比 → 底色（ratio = 該行掉落率 / 0→1基準率）
+  // 🌈 Background
   // ============================================================
-  const DECAY_TIERS = [
-    { minRatio: 0.90, bg: '#1e7e34', fg: '#ffffff' }, // 幾乎無衰減
-    { minRatio: 0.60, bg: '#5a9e20', fg: '#ffffff' }, // 輕微衰減
-    { minRatio: 0.35, bg: '#a07800', fg: '#ffffff' }, // 中度衰減
-    { minRatio: 0.15, bg: '#c05000', fg: '#ffffff' }, // 明顯衰減
-    { minRatio: 0.001,bg: '#9e1010', fg: '#ffffff' }, // 嚴重衰減
-    { minRatio: 0,    bg: '#3a0000', fg: '#ff6666' }, // 完全衰減 0%
-  ];
 
-  // 母數不足專用色
-  const TIER_LOW_SAMPLE = { bg: '#2a2a3a', fg: '#888888' };
+  function getHslColor(ratio) {
+    const r = Math.max(0, Math.min(1, ratio));
 
-  function getTier(ratio) {
-    for (const t of DECAY_TIERS) {
-      if (ratio >= t.minRatio) return t;
-    }
-    return DECAY_TIERS[DECAY_TIERS.length - 1];
+    const hue = r * 120;   // 色相：紅(0) → 綠(120)
+    const saturation = 60; // 飽和度
+    const lightness = 25;  // 亮度
+
+    return {
+      bg: `hsl(${hue}, ${saturation}%, ${lightness}%)`,
+      fg: r > 0.6 ? '#e8e8e8' : '#ffffff', // 偏亮才用灰白
+    };
   }
 
-  function parseRate(text) {
+  // ============================================================
+  // 🧰 Utils
+  // ============================================================
+
+  const parseRate = (text) => {
     if (!text) return null;
-    const s = text.trim().replace('%', '');
-    if (s === '--' || s === '-' || s === '') return null;
-    const v = parseFloat(s);
-    return isNaN(v) ? null : v;
-  }
+    const v = text.trim().replace('%', '');
+    if (!v || v === '-' || v === '--') return null;
+    const num = parseFloat(v);
+    return isNaN(num) ? null : num;
+  };
 
-  function parseSample(text) {
+  const parseSample = (text) => {
     if (!text) return null;
     const m = text.match(/\d+\/(\d+)/);
     return m ? parseInt(m[1]) : null;
-  }
+  };
 
-  function parseHoldLeft(text) {
+  const parseHoldLeft = (text) => {
     if (!text) return null;
     const m = text.match(/^(\d+)/);
     return m ? parseInt(m[1]) : null;
-  }
+  };
+
+  const getBaseline = (rows) => {
+    let base = rows.find(r => r.holdLeft === 0);
+
+    if (!base || base.rate === 0) {
+      base = rows.find(r => r.rate > 0);
+    }
+
+    return base ? base.rate : 0;
+  };
+
+  // ============================================================
+  // 🎨 Style
+  // ============================================================
 
   GM_addStyle(`
     .kcnav-decay-row td {
-      transition: background-color 0.2s, color 0.2s;
+      transition: background-color 0.25s ease, color 0.25s ease;
     }
   `);
 
   // ============================================================
-  // 核心：處理單一表格
+  // 🧠 Core
   // ============================================================
-  function processDropTable(table) {
-    const rows = Array.from(table.querySelectorAll('tr'));
+
+  function processTable(table) {
+    const rows = [...table.querySelectorAll('tr')];
     if (rows.length < 2) return;
 
-    // 找欄位索引（預設 0=推移 1=率 2=數）
-    let colHold = 0, colRate = 1, colSample = 2;
-    const headerRow = rows.find(r => r.querySelector('th'));
-    if (headerRow) {
-      Array.from(headerRow.querySelectorAll('th, td')).forEach((th, i) => {
-        const t = th.textContent.trim();
-        if (/所持|推移/i.test(t))            colHold   = i;
-        if (/ドロップ率|rate/i.test(t))       colRate   = i;
-        if (/ドロップ数|count|数$/.test(t))   colSample = i;
+    let col = { hold: 0, rate: 1, sample: 2 };
+
+    const header = rows.find(r => r.querySelector('th'));
+    if (header) {
+      [...header.querySelectorAll('th, td')].forEach((el, i) => {
+        const t = el.textContent.trim();
+        if (/所持|推移/i.test(t)) col.hold = i;
+        if (/ドロップ率|rate/i.test(t)) col.rate = i;
+        if (/ドロップ数|count|数$/.test(t)) col.sample = i;
       });
     }
 
-    // 解析每列
-    const parsed = [];
-    for (const row of rows) {
-      if (row === headerRow) continue;
-      const cells = Array.from(row.querySelectorAll('td'));
-      if (cells.length <= Math.max(colHold, colRate)) continue;
+    const data = rows
+      .filter(r => r !== header)
+      .map(row => {
+        const cells = [...row.querySelectorAll('td')];
+        if (cells.length <= Math.max(col.hold, col.rate)) return null;
 
-      const holdLeft = parseHoldLeft(cells[colHold]?.textContent);
-      const rate     = parseRate(cells[colRate]?.textContent);
-      const sample   = parseSample(cells[colSample]?.textContent);
+        const holdLeft = parseHoldLeft(cells[col.hold]?.textContent);
+        const rate = parseRate(cells[col.rate]?.textContent);
+        const sample = parseSample(cells[col.sample]?.textContent);
 
-      if (holdLeft === null || rate === null) continue;
-      parsed.push({ row, cells, holdLeft, rate, sample });
-    }
+        if (holdLeft === null || rate === null) return null;
 
-    if (parsed.length === 0) return;
+        return { row, cells, holdLeft, rate, sample };
+      })
+      .filter(Boolean);
 
-    // 基準率：holdLeft === 0 那行（0→1）
-    const baseline = parsed.find(p => p.holdLeft === 0);
-    const baseRate = baseline ? baseline.rate : parsed[0].rate;
+    if (!data.length) return;
 
-    // 上色
-    for (const p of parsed) {
-      const reliable = p.sample === null || p.sample >= MIN_RELIABLE_SAMPLE;
+    const baseRate = getBaseline(data);
 
-      let tier;
-      if (!reliable) {
-        tier = TIER_LOW_SAMPLE;
-      } else if (baseRate === 0) {
-        tier = DECAY_TIERS[DECAY_TIERS.length - 1];
+    for (const item of data) {
+      const isReliable =
+        item.sample === null || item.sample >= MIN_RELIABLE_SAMPLE;
+
+      let style;
+
+      if (!isReliable || baseRate === 0) {
+        style = LOW_SAMPLE_STYLE;
       } else {
-        tier = getTier(p.rate / baseRate);
+        const ratio = item.rate / baseRate;
+        style = getHslColor(ratio);
       }
 
-      for (const cell of p.cells) {
-        cell.style.backgroundColor = tier.bg;
-        cell.style.color = tier.fg;
-      }
+      item.cells.forEach(cell => {
+        cell.style.backgroundColor = style.bg;
+        cell.style.color = style.fg;
+      });
 
-      p.row.classList.add('kcnav-decay-row');
+      item.row.classList.add('kcnav-decay-row');
     }
   }
 
   // ============================================================
-  // 掃描頁面上符合條件的表格
+  // 🔍 Init
   // ============================================================
-  function colorize() {
-    for (const table of document.querySelectorAll('table')) {
+
+  function scanTables() {
+    document.querySelectorAll('table').forEach(table => {
       const text = table.textContent;
       if (text.includes('→') && text.includes('%')) {
-        processDropTable(table);
+        processTable(table);
       }
-    }
+    });
   }
 
-  // MutationObserver：SPA 換頁時自動重跑
-  let debounce = null;
+  let timer = null;
   new MutationObserver(() => {
-    clearTimeout(debounce);
-    debounce = setTimeout(colorize, 500);
-  }).observe(document.body, { childList: true, subtree: true });
+    clearTimeout(timer);
+    timer = setTimeout(scanTables, 500);
+  }).observe(document.body, {
+    childList: true,
+    subtree: true,
+  });
 
-  // 等 Vue 渲染完再初始化
-  setTimeout(colorize, 1800);
+  setTimeout(scanTables, 1800);
 
 })();
