@@ -24,10 +24,7 @@
   }
   .tools-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 3%;
-      width: 100%;
-      max-width: 560px;
+      gap: 5%;
   }
   .tool-card {
       position: relative;
@@ -35,12 +32,14 @@
       border: 1px solid rgba(74, 143, 191, 0.2);
       border-top: 2px solid #c0392b;
       border-radius: 5px;
-      padding: 10%;
+      padding: 7.5% 10%;
       text-decoration: none;
       color: inherit;
       display: flex;
       flex-direction: column;
       gap: 10%;
+      width: 450px;
+      height: 150px;
       transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
       overflow: hidden;
@@ -82,7 +81,7 @@
       letter-spacing: 0.08em;
   }
   .tool-desc {
-      font-size: 13px;
+      font-size: 14px;
       color: #566a80;
       letter-spacing: 0.04em;
       line-height: 1.75;
@@ -100,6 +99,11 @@
 <a class="tool-card" href="ranking_tool.html" target="_blank" rel="noopener noreferrer">
 <div class="tool-name">戰果計算</div>
 <div class="tool-desc">計算每日、每場所需刷新量，並顯示本月完成進度。</div>
+</a>
+
+<a class="tool-card" href="https://github.com/coyablog/kancolle/blob/main/nav_drops.user.js" target="_blank" rel="noopener noreferrer">
+<div class="tool-name">掉落率上色</div>
+<div class="tool-desc">此為 Tempermonkey 腳本。依 KCNav 掉落率衰減對整排上色，母數不足時顯示灰色。</div>
 </a>
 
 </div>
