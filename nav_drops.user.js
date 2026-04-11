@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         KCNAV掉落率上色
+// @name         KCNAV優化
 // @namespace    https://tsunkit.net/
-// @version      2.0
-// @description  依掉落率衰減對整排上色，母數不足時顯示灰色。
+// @version      3.0
+// @description  依掉落率衰減上色，母數不足顯示灰色。敵方編成統計顯示機率。
 // @match        https://tsunkit.net/nav*
 // @grant        GM_addStyle
 // @run-at       document-idle
@@ -26,19 +26,19 @@
   };
 
   // ============================================================
-  // 🌈 Background
+  // 🌈 Background - 掉落率衰減
   // ============================================================
 
   function getHslColor(ratio) {
     const r = Math.max(0, Math.min(1, ratio));
 
     const hue = r * 120;   // 色相：紅(0) → 綠(120)
-    const saturation = 60; // 飽和度
-    const lightness = 25;  // 亮度
+    const saturation = 45; // 飽和度
+    const lightness = 32;  // 亮度
 
     return {
       bg: `hsl(${hue}, ${saturation}%, ${lightness}%)`,
-      fg: r > 0.6 ? '#e8e8e8' : '#ffffff', // 偏亮才用灰白
+      fg: r > 0.5 ? '#e8e8e8' : '#ffffff',
     };
   }
 
@@ -87,10 +87,10 @@
   `);
 
   // ============================================================
-  // 🧠 Core
+  // 🧠 Core - 掉落率衰減上色
   // ============================================================
 
-  function processTable(table) {
+  function processDropTable(table) {
     const rows = [...table.querySelectorAll('tr')];
     if (rows.length < 2) return;
 
@@ -149,14 +149,68 @@
   }
 
   // ============================================================
+  // 📊 敵方編成機率顯示
+  // ============================================================
+
+  function processCompositionTable(table) {
+    const rows = [...table.querySelectorAll('tr')];
+    const dataRows = [];
+
+    // 收集所有包含 × 符號的行
+    for (const row of rows) {
+      const cells = [...row.querySelectorAll('td')];
+
+      // 尋找包含 × 符號的單元格
+      for (let i = 0; i < cells.length; i++) {
+        const cell = cells[i];
+        const text = cell.textContent.trim();
+
+        // 匹配 ×12527 這樣的格式
+        const match = text.match(/^×(\d+)$/);
+        if (match) {
+          const count = parseInt(match[1]);
+          dataRows.push({
+            cell: cell,
+            count: count,
+            row: row
+          });
+        }
+      }
+    }
+
+    // 如果找到統計數據，計算總和和機率
+    if (dataRows.length > 0) {
+      // 計算同一戰鬥點所有編成的總次數
+      const totalCount = dataRows.reduce((sum, d) => sum + d.count, 0);
+
+      for (const data of dataRows) {
+        const percentage = ((data.count / totalCount) * 100).toFixed(1);
+        const text = data.cell.textContent.trim();
+
+        // 只在還沒有百分比的情況下添加
+        if (!text.includes('(')) {
+          data.cell.textContent = `${text} (${percentage}%)`;
+        }
+      }
+    }
+  }
+
+  // ============================================================
   // 🔍 Init
   // ============================================================
 
   function scanTables() {
     document.querySelectorAll('table').forEach(table => {
       const text = table.textContent;
+
+      // 掉落率衰減：檢查是否包含 → 和 %
       if (text.includes('→') && text.includes('%')) {
-        processTable(table);
+        processDropTable(table);
+      }
+
+      // 敵方編成機率：檢查是否包含 × 和數字
+      if (text.includes('×')) {
+        processCompositionTable(table);
       }
     });
   }
